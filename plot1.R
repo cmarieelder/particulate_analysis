@@ -8,8 +8,14 @@ plot1 <- function() {
   NEI <- transform(NEI, year = factor(year))
   year_emissions <- with(NEI, tapply(Emissions, year, sum, na.rm = T))
   year_emissions_df <- data.frame(year = names(year_emissions), total_emissions = year_emissions)
-  with(year_emissions_df, plot(year, total_emissions, pch=19, main="Total PM2.5 Emissions 1999-2008"))
+
+  png(file = "results/plot1.png")
+  with(year_emissions_df, plot(year, total_emissions, pch=19,
+                               main="Total PM2.5 Emission in US, 1999-2008",
+                               xlab="Year", ylab="Total PM2.5 Emissions (tons)"))
   model <- lm(total_emissions ~ as.numeric(year), year_emissions_df) # fit linear model to data
   abline(model, lty=2, lwd = 2, col = "blue") # pass linear model object with line-width default 2
+  dev.off()
 }
+
 plot1()
