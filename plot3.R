@@ -1,29 +1,41 @@
-# Of the four of sources indicated by the type (point, nonpoint, onroad, nonroad)
-# variable, which of these four sources have seen decreases in emissions from
-# 1999–2008 for Baltimore City? Which have seen increases in emissions from
-# 1999–2008? Use the ggplot2 plotting system to make a plot answer this question.
+# Author: Cynthia Elder
+# Date: 8/2/2020
 
-#NEI <- readRDS("data/exdata_data_NEI_data/summarySCC_PM25.rds")
-#SCC <- readRDS("data/exdata_data_NEI_data/Source_Classification_Code.rds")
-
+# Generates a plot to show which source types have seen decreases in
+# emissions from 1999–2008 for Baltimore City, and which have seen increases,
+# using the ggplot2 plotting system.
 plot3 <- function() {
   library(ggplot2)
   library(dplyr)
-  NEI_baltimore <- NEI %>%
-                  filter(fips=="24510") %>%
+
+  # read data into global environment and load constants
+  source("src/read_particulate_data.R")
+  source("src/particulate_constants.R")
+
+  # get data for Baltimore City
+  baltimore_nei <- NEI %>%
+                  filter(fips == BALTIMORE_FIPS) %>%
                   select(year, Emissions, type)
-  NEI_df <- as.data.frame(xtabs(Emissions ~ year + type, data=NEI_baltimore))
-  NEI_df <- rename(NEI_df, total_emissions = Freq)
 
-  q <- ggplot(data=NEI_df, aes(year, total_emissions, group=type)) +
-    geom_point() +
-    geom_smooth(method = "lm") +
-    facet_wrap(~type, scales="free_y") +
-    labs(x="Year", y="PM2.5 Emissions (tons)",
-         title="PM2.5 Emissions by Source in Baltimore City, MD, 1999-2008")
+  # sum the emissions by year and type
+  year_type_nei <- as.data.frame(xtabs(Emissions ~ year + type,
+    data = baltimore_nei))
+  year_type_nei <- rename(year_type_nei, total_emissions = Freq)
 
+  # create plots of year vs. total emissions, with linear regression line,
+  # for each source type
+  emissions_plot <-
+    ggplot(data = year_type_nei, aes(year, total_emissions, group = type)) +
+    geom_point(size = 2) +
+    geom_smooth(method = "lm", se = FALSE) +
+    facet_wrap(~type, scales = "free_y") +
+    labs(x = "Year", y = "PM2.5 Emissions (tons)",
+      title = "PM2.5 Emissions by Source in Baltimore City, MD, 1999-2008")
+
+  # generate the plots as a PNG
   png(file = "results/plot3.png")
-  print(q)
+  print(emissions_plot)
   dev.off()
 }
+
 plot3()
