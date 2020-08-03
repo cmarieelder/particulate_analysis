@@ -7,6 +7,10 @@
 
 source("src/particulate_constants.R")
 
+if (!file.exists(PARTICULATE_DATA_DIR)) {
+  unzip(PARTICULATE_DATA_ZIP, overwrite = FALSE, exdir = PARTICULATE_DATA_DIR)
+}
+
 if (!exists("NEI")) {
   NEI <- readRDS(NEI_FILENAME)
 }
