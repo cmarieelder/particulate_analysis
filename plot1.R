@@ -5,22 +5,34 @@
 # for the years 1999, 2002, 2005, and 2008, decreased in the United
 # States, using the base plotting system.
 plot1 <- function() {
-  # read data into global environment
+  # Load the required packages ------------------------------------------------
+  library(RColorBrewer)
+
+  # Read data into global environment -----------------------------------------
   source("src/read_particulate_data.R")
   
-  # sum the emissions by year
-  year_emissions <- transform(NEI, year = factor(year))
-  year_emissions <- with(year_emissions, tapply(Emissions, year, sum, na.rm = T))
-  year_emissions_df <- data.frame(year = names(year_emissions),
-    total_emissions = year_emissions)
+  # Sum the emissions by year -------------------------------------------------
+  nei_year <- transform(NEI, year = factor(year))
+  nei_year <- with(nei_year, tapply(Emissions, year, sum, na.rm = TRUE))
+  nei_year_df <- data.frame(year = factor(names(nei_year)), total_emissions = nei_year)
 
-  # create the plot of year vs. total emissions, with regression line, as a PNG
+  # Create base plot of year vs. total emissions, as a PNG --------------------
   png(file = "results/plot1.png")
-  with(year_emissions_df, plot(year, total_emissions, pch = 19,
-    main = "Total PM2.5 Emission in US, 1999-2008", xlab = "Year",
-    ylab = "Total PM2.5 Emissions (tons)"))
-  model <- lm(total_emissions ~ as.numeric(year), year_emissions_df)
-  abline(model, lwd = 2, col = "blue")
+
+  par(cex = 1.2, cex.main = 1.0, bg = "aliceblue")
+  cols <- c("brown3", "darkorange2", "darkgoldenrod1", "chartreuse4")
+
+  nei_year_plot <- with(nei_year_df, barplot(total_emissions ~ year, col = cols,
+    ylim = c(0, max(total_emissions) * 1.5), xlab = "Year", ylab = "Total PM2.5 Emissions (tons)",
+    main = "Total PM2.5 Emission in US (1999-2008)"))
+  text(x = nei_year_plot, y = nei_year_df$total_emissions,
+    label = format(round(nei_year_df$total_emissions), big.mark = ",",
+      scientific = FALSE),
+    pos = 1, offset = 3, col = "white")
+  
+  model <- lm(total_emissions ~ as.numeric(year), nei_year_df)
+  abline(model, lty = 2, lwd = 2, col = "blue")
+
   dev.off()
 }
 

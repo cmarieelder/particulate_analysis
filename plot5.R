@@ -4,39 +4,50 @@
 # Creates a plot to show how emissions from motor vehicle sources have changed
 # from 1999–2008 in Baltimore City.
 plot5 <- function() {
+  # Load the required packages ------------------------------------------------
   library(dplyr)
   library(ggplot2)
   
-  # read data into global environment and load constants
+  # Read data into global environment -----------------------------------------
   source("src/read_particulate_data.R")
-  source("src/particulate_constants.R")
 
-  # get SCC data related to motor vehicles
-  vehicle_scc <- subset(SCC, grepl("[Hh]ighway.*Vehicle", SCC.Level.Two))
+  # Set hard-coded variables --------------------------------------------------
+  BALTIMORE_FIPS <- "24510"
 
-  # get Baltimore NEI data that matches the motor vehicle SCC identifiers
-  vehicle_nei <- NEI %>%
+  # Get SCC data related to motor vehicles ------------------------------------
+  scc_vehicle <- subset(SCC, grepl("[Hh]ighway.*Vehicle", SCC.Level.Two))
+
+  # Get Baltimore NEI data that matches the motor vehicle SCC identifiers -----
+  nei_vehicle <- NEI %>%
     filter(fips == BALTIMORE_FIPS) %>%
-    subset(SCC %in% vehicle_scc$SCC) %>%
+    subset(SCC %in% scc_vehicle$SCC) %>%
     select(year, Emissions, type) %>%
     transform(year = factor(year))
 
-  # sum emissions by year
-  year_emissions <- with(vehicle_nei, tapply(Emissions, year, sum, na.rm = T))
-  year_emissions_df <- data.frame(year = names(year_emissions),
-    total_emissions = year_emissions)
+  # Sum the emissions by year -------------------------------------------------
+  nei_year <- with(nei_vehicle, tapply(Emissions, year, sum, na.rm = TRUE))
+  nei_year_df <- data.frame(year = names(nei_year),
+    total_emissions = nei_year)
 
-  # create a plot of year vs. total emissions with regression line
-  emissions_plot <-
-    ggplot(data = year_emissions_df, aes(year, total_emissions, group = 1)) +
-    geom_point(size = 2) +
-    geom_smooth(color = "steelblue", method = "lm", se = FALSE) +
+  # Create plot of year vs. total emissions -----------------------------------
+  nei_year_plot <-
+    ggplot(data = nei_year_df, aes(x = year, y = total_emissions, group = 1,
+      fill = year)) +
+    geom_bar(stat = "identity", show.legend = FALSE) +
+    geom_smooth(method = "lm", se = FALSE, show.legend = FALSE) +
+    stat_poly_eq(formula = y ~ x, label.x = "right", label.y = 1, 
+      aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+      parse = TRUE) +
     labs(x = "Year", y = "PM2.5 Emissions (tons)",
-      title = "Motor Vehicle PM2.5 Emissions in Baltimore City, MD, 1999-2008")
+      title = "Motor Vehicle PM2.5 Emissions in Baltimore City, MD (1999-2008)") +
+    scale_fill_manual(values = c("brown3", "darkorange2", "darkgoldenrod1",
+      "chartreuse4")) +
+    geom_text(aes(label = format(round(total_emissions), big.mark = ",",
+      scientific = FALSE)), vjust = 1.6, color = "white", size = 3.5)
 
-  # print the plot to PNG
+  # Generate the plot as a PNG ------------------------------------------------
   png(file = "results/plot5.png")
-  print(emissions_plot)
+  print(nei_year_plot)
   dev.off()
 }
 

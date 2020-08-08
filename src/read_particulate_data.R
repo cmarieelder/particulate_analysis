@@ -5,17 +5,14 @@
 # This improves run-time of plot functions, by not requiring multiple reads.
 # May be an issue if the object already in the global environment is corrupt.
 
-source("src/particulate_constants.R")
-
-if (!file.exists(PARTICULATE_DATA_DIR)) {
-  unzip(PARTICULATE_DATA_ZIP, overwrite = FALSE, exdir = PARTICULATE_DATA_DIR)
+DATA_DIR <- "data/exdata_data_NEI_data"
+if (!file.exists(DATA_DIR)) {
+  unzip(paste0(DATA_DIR, ".zip"), overwrite = FALSE, exdir = DATA_DIR)
 }
 
-if (!exists("NEI")) {
-  NEI <- readRDS(NEI_FILENAME)
+if (!exists("NEI") | !exists("SCC")) {
+  NEI <- readRDS("data/exdata_data_NEI_data/summarySCC_PM25.rds")
+  SCC <- readRDS("data/exdata_data_NEI_data/Source_Classification_Code.rds")
 }
 
-if (!exists("SCC")) {
-  SCC <- readRDS(SCC_FILENAME)
-}
 
