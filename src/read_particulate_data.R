@@ -7,12 +7,12 @@
 
 DATA_DIR <- "data/exdata_data_NEI_data"
 if (!file.exists(DATA_DIR)) {
-  unzip(paste0(DATA_DIR, ".zip"), overwrite = FALSE, exdir = DATA_DIR)
+    unzip(paste0(DATA_DIR, ".zip"), overwrite = FALSE, exdir = DATA_DIR)
 }
 
 if (!exists("NEI") | !exists("SCC")) {
-  NEI <- readRDS("data/exdata_data_NEI_data/summarySCC_PM25.rds")
-  SCC <- readRDS("data/exdata_data_NEI_data/Source_Classification_Code.rds")
+    NEI <- readRDS("data/exdata_data_NEI_data/summarySCC_PM25.rds")
+    SCC <- readRDS("data/exdata_data_NEI_data/Source_Classification_Code.rds")
 }
 
 
